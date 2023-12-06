@@ -14,6 +14,9 @@ pygame.mixer.music.load("a-space-journey-through-the-solar-system-153272.mp3")
 pygame.mixer.music.play(-1)
 pygame.mixer.music.set_volume(0.2)
 
+# Carga el sonido de disparo
+shoot_sound = pygame.mixer.Sound("disparos.mp3")
+
 
 class Menu:
     def __init__(self, screen):
@@ -153,6 +156,8 @@ class Game:
 
                 self.all_sprites.add(laser)
                 self.laser_list.add(laser)
+                # Reproduce el sonido de disparo
+                shoot_sound.play()
 
         return False
 
@@ -169,6 +174,7 @@ class Game:
                     self.laser_list.remove(laser)
                 # Decrementa el contador de meteoritos
                 self.meteor_count -= 1
+
 
         # Colisiones entre lasers y enemigos
         hit_enemies = pygame.sprite.groupcollide(self.enemy_list, self.laser_list, True, True)
