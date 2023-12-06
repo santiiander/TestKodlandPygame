@@ -155,10 +155,8 @@ class Game:
         # Colisiones entre lasers y enemigos
         hit_enemies = pygame.sprite.groupcollide(self.enemy_list, self.laser_list, True, True)
         for enemy in hit_enemies:
-            # Puedes realizar alguna acción aquí si es necesario
             pass
 
-        # Generar nuevos enemigos
         if random.randrange(100) < 1:
             enemy = Enemy()
             enemy.rect.x = random.randrange(880)
@@ -210,7 +208,6 @@ class Game:
                 if event.type == pygame.QUIT or (event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE):
                     pygame.quit()
                     return
-
 
 if __name__ == "__main__":
     game = Game()
