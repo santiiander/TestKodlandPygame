@@ -4,9 +4,12 @@ import random
 
 BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
-RED =(255,0,0)
+RED = (255, 0, 0)
+
 
 pygame.init()
+pygame.mouse.set_visible(False)
+
 
 class Menu:
     def __init__(self, screen):
@@ -33,6 +36,7 @@ class Menu:
                 self.option = (self.option + 1) % 2
         return "menu"
 
+
 class Laser(pygame.sprite.Sprite):
     def __init__(self):
         super().__init__()
@@ -43,16 +47,29 @@ class Laser(pygame.sprite.Sprite):
     def update(self):
         self.rect.y -= 5
 
+
 class Meteor(pygame.sprite.Sprite):
     def __init__(self):
         super().__init__()
-        self.image = pygame.image.load("meteor.png").convert()
-        self.image.set_colorkey(BLACK)
+        self.image = pygame.image.load("meteor.png").convert_alpha()
         self.rect = self.image.get_rect()
+        self.rotation_speed = random.uniform(-2, 2)  # Velocidad de rotación
+        self.angle = 0  # Ángulo de rotación inicial
 
     def reset_position(self):
         self.rect.x = random.randrange(880)
         self.rect.y = random.randrange(250)
+
+    def update(self):
+        self.rotate()
+
+    def rotate(self):
+        self.angle = (self.angle + self.rotation_speed) % 360
+        original_center = self.rect.center
+        self.image = pygame.transform.rotate(pygame.image.load("meteor.png").convert_alpha(), self.angle)
+        self.rect = self.image.get_rect()
+        self.rect.center = original_center
+
 
 class Player(pygame.sprite.Sprite):
     def __init__(self):
@@ -66,15 +83,16 @@ class Player(pygame.sprite.Sprite):
         self.rect.x = mouse_pos[0]
         self.rect.y = 510
 
+
 class Enemy(pygame.sprite.Sprite):
     def __init__(self):
         super().__init__()
-        self.image = pygame.image.load("enemy.png").convert()
-        self.image.set_colorkey(BLACK)
+        self.image = pygame.image.load("enemy.png").convert_alpha()
         self.rect = self.image.get_rect()
 
     def update(self):
-        self.rect.y += 1
+        self.rect.y += 0.6
+
 
 class Game:
     def __init__(self):
@@ -124,6 +142,7 @@ class Game:
     def run_logic(self):
         self.all_sprites.update()
 
+        # Colisiones entre lasers y meteoritos
         for laser in self.laser_list:
             hit_meteors = pygame.sprite.spritecollide(laser, self.meteor_list, True)
             for meteor in hit_meteors:
@@ -133,6 +152,13 @@ class Game:
                     self.all_sprites.remove(laser)
                     self.laser_list.remove(laser)
 
+        # Colisiones entre lasers y enemigos
+        hit_enemies = pygame.sprite.groupcollide(self.enemy_list, self.laser_list, True, True)
+        for enemy in hit_enemies:
+            # Puedes realizar alguna acción aquí si es necesario
+            pass
+
+        # Generar nuevos enemigos
         if random.randrange(100) < 1:
             enemy = Enemy()
             enemy.rect.x = random.randrange(880)
@@ -140,6 +166,7 @@ class Game:
             self.enemy_list.add(enemy)
             self.all_sprites.add(enemy)
 
+        # Colisiones entre jugador y enemigos
         hit_enemies = pygame.sprite.spritecollide(self.player, self.enemy_list, True)
         if hit_enemies:
             self.done = True
@@ -149,8 +176,8 @@ class Game:
         self.all_sprites.draw(self.screen)
 
         if self.done:
-            text = self.font.render("Game Over", True, WHITE)
-            self.screen.blit(text, (400, 300))
+            text = self.font.render("Fin del Juego", True, RED)
+            self.screen.blit(text, (350, 250))
 
         pygame.display.flip()
 
@@ -167,6 +194,10 @@ class Game:
                 self.done = self.process_events()
                 self.run_logic()
                 self.display_frame()
+                if self.done:
+                    pygame.time.delay(3000)
+                    pygame.quit()
+                    return
             elif state == "exit":
                 self.done = True
             pygame.display.flip()
@@ -179,6 +210,7 @@ class Game:
                 if event.type == pygame.QUIT or (event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE):
                     pygame.quit()
                     return
+
 
 if __name__ == "__main__":
     game = Game()
