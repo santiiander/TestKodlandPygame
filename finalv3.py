@@ -6,7 +6,6 @@ BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
 RED = (255, 0, 0)
 
-
 pygame.init()
 pygame.mouse.set_visible(False)
 
@@ -111,6 +110,7 @@ class Game:
         self.player = Player()
         self.all_sprites.add(self.player)
 
+        self.meteor_count = 25  # Inicializa con la cantidad de meteoritos
         self.initialize_meteors()
 
     def initialize_meteors(self):
@@ -151,12 +151,16 @@ class Game:
                 if laser.rect.y < -10:
                     self.all_sprites.remove(laser)
                     self.laser_list.remove(laser)
+                # Decrementa el contador de meteoritos
+                self.meteor_count -= 1
 
         # Colisiones entre lasers y enemigos
         hit_enemies = pygame.sprite.groupcollide(self.enemy_list, self.laser_list, True, True)
         for enemy in hit_enemies:
+            # Puedes realizar alguna acción aquí si es necesario
             pass
 
+        # Generar nuevos enemigos
         if random.randrange(100) < 1:
             enemy = Enemy()
             enemy.rect.x = random.randrange(880)
@@ -167,6 +171,10 @@ class Game:
         # Colisiones entre jugador y enemigos
         hit_enemies = pygame.sprite.spritecollide(self.player, self.enemy_list, True)
         if hit_enemies:
+            self.done = True
+
+        # Verifica si todos los meteoritos han sido eliminados
+        if self.meteor_count == 0:
             self.done = True
 
     def display_frame(self):
@@ -208,6 +216,7 @@ class Game:
                 if event.type == pygame.QUIT or (event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE):
                     pygame.quit()
                     return
+
 
 if __name__ == "__main__":
     game = Game()
