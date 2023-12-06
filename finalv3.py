@@ -10,6 +10,11 @@ pygame.init()
 pygame.mouse.set_visible(False)
 
 
+pygame.mixer.music.load("a-space-journey-through-the-solar-system-153272.mp3")
+pygame.mixer.music.play(-1)
+pygame.mixer.music.set_volume(0.2)
+
+
 class Menu:
     def __init__(self, screen):
         self.screen = screen
@@ -93,6 +98,17 @@ class Enemy(pygame.sprite.Sprite):
         self.rect.y += 0.6
 
 
+class Enemy2(pygame.sprite.Sprite):
+    def __init__(self):
+        super().__init__()
+        self.image = pygame.image.load("enemy2.png").convert_alpha()
+        self.rect = self.image.get_rect()
+
+    def update(self):
+        self.rect.y += 0.6
+        self.rect.x -= 1  # Se mueve de derecha a izquierda
+
+
 class Game:
     def __init__(self):
         self.score = 0
@@ -104,6 +120,7 @@ class Game:
         self.meteor_list = pygame.sprite.Group()
         self.laser_list = pygame.sprite.Group()
         self.enemy_list = pygame.sprite.Group()
+        self.enemy2_list = pygame.sprite.Group()  # Nueva lista para los enemigos de tipo Enemy2
         self.menu = Menu(self.screen)
         self.font = pygame.font.Font(None, 50)
 
@@ -142,7 +159,6 @@ class Game:
     def run_logic(self):
         self.all_sprites.update()
 
-        # Colisiones entre lasers y meteoritos
         for laser in self.laser_list:
             hit_meteors = pygame.sprite.spritecollide(laser, self.meteor_list, True)
             for meteor in hit_meteors:
@@ -157,7 +173,13 @@ class Game:
         # Colisiones entre lasers y enemigos
         hit_enemies = pygame.sprite.groupcollide(self.enemy_list, self.laser_list, True, True)
         for enemy in hit_enemies:
-            # Puedes realizar alguna acción aquí si es necesario
+            print(f"¡Enemigo impactado! Posición: ({enemy.rect.x}, {enemy.rect.y})")
+            pass
+
+        # Colisiones entre lasers y enemigos de tipo Enemy2
+        hit_enemies2 = pygame.sprite.groupcollide(self.enemy2_list, self.laser_list, True, True)
+        for enemy2 in hit_enemies2:
+            print(f"¡Enemigo impactado! Posición: ({enemy2.rect.x}, {enemy2.rect.y})")
             pass
 
         # Generar nuevos enemigos
@@ -168,9 +190,22 @@ class Game:
             self.enemy_list.add(enemy)
             self.all_sprites.add(enemy)
 
+        # Generar nuevos enemigos de tipo Enemy2
+        if random.randrange(150) < 1:
+            enemy2 = Enemy2()
+            enemy2.rect.x = 900  # Empieza fuera del lado derecho de la pantalla
+            enemy2.rect.y = random.randrange(250)
+            self.enemy2_list.add(enemy2)
+            self.all_sprites.add(enemy2)
+
         # Colisiones entre jugador y enemigos
         hit_enemies = pygame.sprite.spritecollide(self.player, self.enemy_list, True)
         if hit_enemies:
+            self.done = True
+
+        # Colisiones entre jugador y enemigos de tipo Enemy2
+        hit_enemies2 = pygame.sprite.spritecollide(self.player, self.enemy2_list, True)
+        if hit_enemies2:
             self.done = True
 
         # Verifica si todos los meteoritos han sido eliminados
